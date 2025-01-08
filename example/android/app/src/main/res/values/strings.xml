@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">capazip-example</string>
+    <string name="title_activity_main">capazip-example</string>
+    <string name="package_name">com.capazip.app</string>
+    <string name="custom_url_scheme">com.capazip.app</string>
+</resources>

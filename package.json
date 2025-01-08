@@ -1,0 +1,98 @@
+{
+  "name": "capa-zip",
+  "version": "1.0.0",
+  "description": "A Capacitor plugin for zip/unzip operations",
+  "main": "dist/plugin.cjs.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/esm/index.d.ts",
+  "unpkg": "dist/plugin.js",
+  "files": [
+    "android/src/main/",
+    "android/build.gradle",
+    "dist/",
+    "ios/Plugin",
+    "Package.swift",
+    "CapaZip.podspec"
+  ],
+  "author": "Jun Murakami",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jun-Murakami/capa-zip.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Jun-Murakami/capa-zip/issues"
+  },
+  "keywords": [
+    "capacitor",
+    "plugin",
+    "native",
+    "zip",
+    "unzip",
+    "compression"
+  ],
+  "scripts": {
+    "verify": "npm run verify:ios && npm run verify:android && npm run verify:web",
+    "verify:ios": "xcodebuild -scheme CordovaCapZip -destination generic/platform=iOS",
+    "verify:android": "cd android && ./gradlew clean build test && cd ..",
+    "verify:web": "npm run build",
+    "lint": "npm run eslint && npm run prettier -- --check && npm run swiftlint -- lint",
+    "fmt": "npm run eslint -- --fix && npm run prettier -- --write && npm run swiftlint -- --fix --format",
+    "eslint": "eslint . --ext ts",
+    "prettier": "prettier \"**/*.{css,html,ts,js,java}\" --plugin=prettier-plugin-java",
+    "swiftlint": "node-swiftlint",
+    "docgen": "docgen --api ZipPlugin --output-readme README.md --output-json dist/docs.json",
+    "build": "npm run clean && npm run docgen && tsc && rollup -c rollup.config.mjs",
+    "clean": "rimraf ./dist",
+    "watch": "tsc --watch",
+    "prepublishOnly": "npm run build",
+    "prepare": "npm run build",
+    "test": "jest",
+    "test:unit": "jest --testPathPattern='^(?!.*integration).*\\.test\\.ts$'",
+    "test:integration": "jest --testPathPattern='integration/.+\\.test\\.ts$'",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:ios": "cd ios && xcodebuild test -scheme Plugin -destination 'platform=iOS Simulator,name=iPhone 14'",
+    "test:android": "cd android && .\\gradlew.bat test",
+    "test:native": "npm run test:ios && npm run test:android"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/core": "^6.2.0",
+    "@capacitor/docgen": "^0.3.0",
+    "@capacitor/ios": "^6.2.0",
+    "@ionic/eslint-config": "^0.4.0",
+    "@ionic/prettier-config": "^4.0.0",
+    "@ionic/swiftlint-config": "^2.0.0",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.10.5",
+    "eslint": "^9.17.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.4.2",
+    "prettier-plugin-java": "^2.6.5",
+    "rimraf": "^6.0.1",
+    "rollup": "^4.30.1",
+    "swiftlint": "^2.0.0",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.7.2"
+  },
+  "peerDependencies": {
+    "@capacitor/core": "^6.0.0"
+  },
+  "prettier": "@ionic/prettier-config",
+  "swiftlint": "@ionic/swiftlint-config",
+  "eslintConfig": {
+    "extends": "@ionic/eslint-config/recommended"
+  },
+  "capacitor": {
+    "ios": {
+      "src": "ios"
+    },
+    "android": {
+      "src": "android"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

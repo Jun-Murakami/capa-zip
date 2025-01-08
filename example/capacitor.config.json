@@ -1,0 +1,10 @@
+{
+  "appId": "com.capazip.app",
+  "appName": "capazip-example",
+  "webDir": "dist",
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": true
+    }
+  }
+}
