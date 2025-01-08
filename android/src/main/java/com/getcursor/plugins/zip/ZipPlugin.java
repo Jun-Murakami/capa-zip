@@ -1,6 +1,10 @@
 package com.getcursor.plugins.zip;
 
+import android.content.Context;
+import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
+import android.provider.OpenableColumns;
 import android.util.Log;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.JSArray;
@@ -17,6 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -41,13 +46,42 @@ public class ZipPlugin extends Plugin {
     private String getFilePathFromUri(String uriString) {
         try {
             Uri uri = Uri.parse(uriString);
-            if (uri.getScheme() != null && uri.getScheme().equals("file")) {
-                return uri.getPath();
+            if (uri.getScheme() != null) {
+                if (uri.getScheme().equals("file")) {
+                    return uri.getPath();
+                } else if (uri.getScheme().equals("content")) {
+                    try {
+                        return getContentPathFromUri(getContext(), uri);
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error getting real path from URI", e);
+                        return null;
+                    }
+                }
             }
             return uriString;
         } catch (Exception e) {
+            Log.e(TAG, "Error parsing URI", e);
             return uriString;
         }
+    }
+
+    private String getContentPathFromUri(Context context, Uri uri) throws Exception {
+        try (Cursor cursor = context.getContentResolver().query(uri, null, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                String displayName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                File tempFile = new File(context.getCacheDir(), displayName);
+                try (InputStream is = context.getContentResolver().openInputStream(uri);
+                    FileOutputStream fos = new FileOutputStream(tempFile)) {
+                    byte[] buffer = new byte[8192];
+                    int bytesRead;
+                    while ((bytesRead = is.read(buffer)) != -1) {
+                        fos.write(buffer, 0, bytesRead);
+                    }
+                    return tempFile.getAbsolutePath();
+                }
+            }
+        }
+        return null;
     }
 
     private void addToZip(File file, String fileName, ZipOutputStream zos, byte[] buffer) throws IOException {

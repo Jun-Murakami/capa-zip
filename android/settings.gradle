@@ -1,3 +1,4 @@
-include ':app', ':capacitor-android'
+include ':capacitor-android'
 project(':capacitor-android').projectDir = new File('../node_modules/@capacitor/android/capacitor')
 rootProject.name = "capa-zip"
+include ':capa-zip'
