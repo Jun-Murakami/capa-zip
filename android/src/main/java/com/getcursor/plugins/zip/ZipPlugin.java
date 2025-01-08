@@ -66,7 +66,22 @@ public class ZipPlugin extends Plugin {
     }
 
     private String getContentPathFromUri(Context context, Uri uri) throws Exception {
-        return uri.toString();
+        try (Cursor cursor = context.getContentResolver().query(uri, null, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                String displayName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                File tempFile = new File(context.getCacheDir(), displayName);
+                try (InputStream is = context.getContentResolver().openInputStream(uri);
+                     FileOutputStream fos = new FileOutputStream(tempFile)) {
+                    byte[] buffer = new byte[8192];
+                    int bytesRead;
+                    while ((bytesRead = is.read(buffer)) != -1) {
+                        fos.write(buffer, 0, bytesRead);
+                    }
+                    return tempFile.getAbsolutePath();
+                }
+            }
+        }
+        return null;
     }
 
     private void addToZip(File file, String fileName, ZipOutputStream zos, byte[] buffer) throws IOException {
@@ -193,17 +208,10 @@ public class ZipPlugin extends Plugin {
         }
 
         try {
-            InputStream inputStream;
-            if (sourceFile.startsWith("content://")) {
-                Uri uri = Uri.parse(sourceFile);
-                inputStream = getContext().getContentResolver().openInputStream(uri);
-            } else {
-                File zipFile = new File(sourceFile);
-                if (!zipFile.exists()) {
-                    call.reject("Source file does not exist");
-                    return;
-                }
-                inputStream = new FileInputStream(zipFile);
+            File zipFile = new File(sourceFile);
+            if (!zipFile.exists()) {
+                call.reject("Source file does not exist");
+                return;
             }
 
             File destDir = new File(destinationPath);
@@ -212,71 +220,60 @@ public class ZipPlugin extends Plugin {
                 return;
             }
 
-            byte[] buffer = new byte[32768];
-            ZipInputStream zis = new ZipInputStream(new BufferedInputStream(inputStream, 32768));
+            FileInputStream fis = new FileInputStream(zipFile);
+            ZipInputStream zis = new ZipInputStream(new BufferedInputStream(fis));
+            byte[] buffer = new byte[8192]; // Increased buffer size
 
-            // まず解凍後の合計�イズを計算
-            long totalUncompressedSize = 0;
-            List<ZipEntryInfo> entries = new ArrayList<>();
+            // First pass: calculate total uncompressed size
+            long totalSize = 0;
             ZipEntry ze;
             while ((ze = zis.getNextEntry()) != null) {
                 if (!ze.isDirectory()) {
-                    entries.add(new ZipEntryInfo(ze.getName(), ze.getSize()));
-                    totalUncompressedSize += ze.getSize();
+                    totalSize += ze.getSize();
                 }
                 zis.closeEntry();
             }
             zis.close();
-            inputStream.close();
 
-            // 再度ストリームを開く
-            if (sourceFile.startsWith("content://")) {
-                Uri uri = Uri.parse(sourceFile);
-                inputStream = getContext().getContentResolver().openInputStream(uri);
-            } else {
-                inputStream = new FileInputStream(sourceFile);
-            }
-            zis = new ZipInputStream(new BufferedInputStream(inputStream, 32768));
-
-            // 進捗状況の追跡
+            // Second pass: actual extraction
+            fis = new FileInputStream(zipFile);
+            zis = new ZipInputStream(new BufferedInputStream(fis));
             long processedSize = 0;
 
             while ((ze = zis.getNextEntry()) != null) {
                 String fileName = ze.getName();
+                File newFile = new File(destDir, fileName);
+
                 if (ze.isDirectory()) {
-                    new File(destDir, fileName).mkdirs();
+                    newFile.mkdirs();
                     continue;
                 }
 
-                File newFile = new File(destDir, fileName);
                 new File(newFile.getParent()).mkdirs();
-                
                 FileOutputStream fos = new FileOutputStream(newFile);
-                BufferedOutputStream bos = new BufferedOutputStream(fos, 32768);
 
                 int count;
                 while ((count = zis.read(buffer)) != -1) {
-                    bos.write(buffer, 0, count);
+                    fos.write(buffer, 0, count);
                     processedSize += count;
-                    
-                    // 進捗状況の通知
+
+                    // Notify progress
                     JSObject progress = new JSObject();
                     progress.put("loaded", processedSize);
-                    progress.put("total", totalUncompressedSize);
+                    progress.put("total", totalSize);
                     notifyListeners("zipProgress", progress);
                 }
 
-                bos.close();
+                fos.close();
                 zis.closeEntry();
             }
 
             zis.close();
-            inputStream.close();
 
-            // 最終進捗の通知
+            // Final progress update
             JSObject finalProgress = new JSObject();
-            finalProgress.put("loaded", totalUncompressedSize);
-            finalProgress.put("total", totalUncompressedSize);
+            finalProgress.put("loaded", totalSize);
+            finalProgress.put("total", totalSize);
             notifyListeners("zipProgress", finalProgress);
 
             call.resolve();
@@ -298,17 +295,6 @@ public class ZipPlugin extends Plugin {
                     addToZip(file, path, zos, buffer);
                 }
             }
-        }
-    }
-
-    // ZIPエントリー情報を保持するた�のヘルパークラス
-    private static class ZipEntryInfo {
-        String name;
-        long size;
-
-        ZipEntryInfo(String name, long size) {
-            this.name = name;
-            this.size = size;
         }
     }
 } 
