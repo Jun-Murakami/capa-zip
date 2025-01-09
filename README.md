@@ -1,6 +1,14 @@
 # capa-zip
 
-zip and unzip
+A simple Zip/Unzip plugin for Capacitor v6, supporting iOS and Android platforms.
+
+## Overview
+
+This plugin provides zip and unzip functionality for Capacitor applications:
+
+- **iOS Implementation**: Uses SSZipArchive library for efficient compression/decompression
+- **Android Implementation**: Leverages Java's built-in ZipInputStream/ZipOutputStream
+- **Platform Support**: iOS and Android (Web platform not supported)
 
 ## Install
 
