@@ -1,6 +1,6 @@
 {
   "name": "capa-zip",
-  "version": "1.0.5",
+  "version": "1.0.7",
   "description": "A Capacitor plugin for zip/unzip operations",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
@@ -57,27 +57,27 @@
     "test:native": "npm run test:ios && npm run test:android"
   },
   "devDependencies": {
-    "@capacitor/android": "^6.2.0",
-    "@capacitor/core": "^6.2.0",
+    "@capacitor/android": "^7.0.1",
+    "@capacitor/core": "^7.0.1",
     "@capacitor/docgen": "^0.3.0",
-    "@capacitor/ios": "^6.2.0",
+    "@capacitor/ios": "^7.0.1",
     "@ionic/eslint-config": "^0.4.0",
     "@ionic/prettier-config": "^4.0.0",
     "@ionic/swiftlint-config": "^2.0.0",
     "@types/jest": "^29.5.14",
-    "@types/node": "^22.10.5",
-    "eslint": "^9.17.0",
+    "@types/node": "^22.12.0",
+    "eslint": "^9.19.0",
     "jest": "^29.7.0",
     "prettier": "^3.4.2",
-    "prettier-plugin-java": "^2.6.5",
+    "prettier-plugin-java": "^2.6.7",
     "rimraf": "^6.0.1",
-    "rollup": "^4.30.1",
+    "rollup": "^4.32.1",
     "swiftlint": "^2.0.0",
     "ts-jest": "^29.2.5",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.3"
   },
   "peerDependencies": {
-    "@capacitor/core": "^6.0.0"
+    "@capacitor/core": ">=6.0.0 <8.0.0"
   },
   "prettier": "@ionic/prettier-config",
   "swiftlint": "@ionic/swiftlint-config",
