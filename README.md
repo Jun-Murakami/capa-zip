@@ -24,6 +24,7 @@ npx cap sync
 * [`addListener('zipProgress', ...)`](#addlistenerzipprogress-)
 * [`unzip(...)`](#unzip)
 * [`zip(...)`](#zip)
+* [`removeAllListeners()`](#removealllisteners)
 * [Interfaces](#interfaces)
 
 </docgen-index>
@@ -141,6 +142,19 @@ Creates a zip file from a directory or list of files.
 | **`options`** | <code>{ sourcePath: string; destinationPath: string; files?: string[]; }</code> | Options for the zip operation |
 
 **Since:** 1.1.0
+
+--------------------
+
+
+### removeAllListeners()
+
+```typescript
+removeAllListeners() => Promise<void>
+```
+
+Removes all registered event listeners.
+
+**Since:** 7.0.0
 
 --------------------
 
