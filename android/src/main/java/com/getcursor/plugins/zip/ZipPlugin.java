@@ -58,9 +58,9 @@ public class ZipPlugin extends Plugin {
                     }
                 }
             }
-            // Directory.External に相当するディレクトリを使用
-            File externalDir = getContext().getExternalFilesDir(null);
-            File resolvedFile = new File(externalDir, uriString);
+            // Directory.Data に相当するディレクトリを使用
+            File internalDir = getContext().getFilesDir();
+            File resolvedFile = new File(internalDir, uriString);
             return resolvedFile.getAbsolutePath();
         } catch (Exception e) {
             Log.e(TAG, "Error parsing URI", e);

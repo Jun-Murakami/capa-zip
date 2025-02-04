@@ -1,6 +1,6 @@
 {
   "name": "capa-zip",
-  "version": "7.0.1",
+  "version": "7.0.3",
   "description": "A Capacitor plugin for zip/unzip operations",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
@@ -65,13 +65,13 @@
     "@ionic/prettier-config": "^4.0.0",
     "@ionic/swiftlint-config": "^2.0.0",
     "@types/jest": "^29.5.14",
-    "@types/node": "^22.12.0",
+    "@types/node": "^22.13.1",
     "eslint": "^9.19.0",
     "jest": "^29.7.0",
     "prettier": "^3.4.2",
     "prettier-plugin-java": "^2.6.7",
     "rimraf": "^6.0.1",
-    "rollup": "^4.32.1",
+    "rollup": "^4.34.2",
     "swiftlint": "^2.0.0",
     "ts-jest": "^29.2.5",
     "typescript": "^5.7.3"

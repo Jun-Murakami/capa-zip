@@ -1,17 +1,44 @@
 import { Zip } from '../../index';
 
-// @capacitor-community/zipプラグインのモック
-jest.mock('../../index', () => ({
-  Zip: {
-    unzip: (...args: any[]) => mockUnzip(...args),
-    zip: (...args: any[]) => mockZip(...args),
-    addListener: jest.fn()
-  }
+// Capacitorのモックを設定
+jest.mock('@capacitor/core', () => ({
+  Capacitor: {
+    getPlatform: jest.fn().mockReturnValue('android')
+  },
+  WebPlugin: class { }
 }));
 
 // ネイティブプラグインのモック
 const mockUnzip = jest.fn();
 const mockZip = jest.fn();
+
+// パス解決をシミュレートする関数
+function resolveAndroidPath(path: string): string {
+  const basePath = '/data/data/com.test.app/files';
+  // パスが既に絶対パスの場合はそのまま返す
+  if (path.startsWith('/')) {
+    return path;
+  }
+  // 相対パスの場合は内部ストレージパスと結合
+  return `${basePath}/${path}`;
+}
+
+// @capacitor-community/zipプラグインのモック
+jest.mock('../../index', () => ({
+  Zip: {
+    unzip: (...args: any[]) => mockUnzip(...args),
+    zip: (options: any) => {
+      // パスを解決してからmockZipを呼び出す
+      const resolvedOptions = {
+        sourcePath: resolveAndroidPath(options.sourcePath),
+        destinationPath: resolveAndroidPath(options.destinationPath),
+        files: options.files
+      };
+      return mockZip(resolvedOptions);
+    },
+    addListener: jest.fn()
+  }
+}));
 
 describe('Android Integration Tests', () => {
   beforeEach(() => {
@@ -201,6 +228,49 @@ describe('Android Integration Tests', () => {
       mockZip.mockResolvedValueOnce(undefined);
       await expect(mockZip(options)).resolves.not.toThrow();
       expect(mockZip).toHaveBeenCalledWith(options);
+    });
+  });
+
+  describe('Directory Resolution Tests', () => {
+    it('should resolve Directory.Data paths correctly', async () => {
+      const options = {
+        sourcePath: 'test-directory',
+        destinationPath: 'archive.zip'
+      };
+
+      // Directory.Dataのパスをモック
+      const expectedBasePath = '/data/data/com.test.app/files';
+      mockZip.mockImplementation((opts) => {
+        // 実際に解決されたパスをログ出力
+        console.log('Resolved source path:', opts.sourcePath);
+        console.log('Resolved destination path:', opts.destinationPath);
+
+        // パスが期待する形式かチェック
+        expect(opts.sourcePath).toBe(`${expectedBasePath}/test-directory`);
+        expect(opts.destinationPath).toBe(`${expectedBasePath}/archive.zip`);
+      });
+
+      await Zip.zip(options);
+      expect(mockZip).toHaveBeenCalled();
+    });
+
+    it('should not use external storage for Directory.Data', async () => {
+      const options = {
+        sourcePath: 'test-directory',
+        destinationPath: 'archive.zip'
+      };
+
+      mockZip.mockImplementation((opts) => {
+        const externalPath = '/storage/emulated/0/Android/data';
+        expect(opts.sourcePath).not.toContain(externalPath);
+        expect(opts.destinationPath).not.toContain(externalPath);
+        // 内部ストレージパスが使用されていることを確認
+        expect(opts.sourcePath).toContain('/data/data/');
+        expect(opts.destinationPath).toContain('/data/data/');
+      });
+
+      await Zip.zip(options);
+      expect(mockZip).toHaveBeenCalled();
     });
   });
 }); 

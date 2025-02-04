@@ -186,10 +186,61 @@ window.customElements.define(
         }
       });
 
+      // パス解決の詳細をログ出力する関数を修正
+      async function logPathDetails(path: string, directory: Directory) {
+        try {
+          const uri = await Filesystem.getUri({
+            path,
+            directory
+          });
+
+          console.log(`Path details for ${path}:`);
+          console.log(`- Directory type: ${directory}`);
+          console.log(`- Resolved URI: ${uri.uri}`);
+
+          try {
+            const stat = await Filesystem.stat({
+              path,
+              directory
+            });
+
+            console.log(`- Actual path: ${stat.uri}`);
+            console.log(`- Type: ${stat.type}`);
+            console.log(`- Size: ${stat.size} bytes`);
+            console.log(`- Modified: ${stat.mtime}`);
+
+            return {
+              uri: uri.uri,
+              stat
+            };
+          } catch (statError) {
+            // ファイルが存在しない場合でもURIは返す
+            console.log(`- File/Directory does not exist yet`);
+            return {
+              uri: uri.uri,
+              stat: null
+            };
+          }
+        } catch (error) {
+          console.error(`Error getting path details for ${path}:`, error);
+          throw error;
+        }
+      }
+
       // Compression process
       this.shadowRoot?.querySelector('#zipBtn')?.addEventListener('click', async () => {
         try {
-          statusEl.textContent = 'Compressing files...';
+          statusEl.textContent = 'Checking paths...';
+
+          // Directory.Dataのパス解決を詳細に確認
+          const sourceDetails = await logPathDetails('test-files', Directory.Data);
+          const destDetails = await logPathDetails('archive.zip', Directory.Data);
+
+          statusEl.textContent = 'Path details:\n' +
+            `Source: ${sourceDetails.uri}\n` +
+            `Destination: ${destDetails.uri}\n` +
+            'Starting compression...';
+
           progressBar.style.width = '0%';
 
           const sourcePath = await this.getFullPath('test-files', Directory.Data);
@@ -220,7 +271,16 @@ window.customElements.define(
       // Extraction process
       this.shadowRoot?.querySelector('#unzipBtn')?.addEventListener('click', async () => {
         try {
-          statusEl.textContent = 'Extracting files...';
+          statusEl.textContent = 'Checking paths...';
+
+          const zipDetails = await logPathDetails('archive.zip', Directory.Data);
+          const extractDetails = await logPathDetails('extracted', Directory.Data);
+
+          statusEl.textContent = 'Path details:\n' +
+            `ZIP file: ${zipDetails.uri}\n` +
+            `Extract to: ${extractDetails.uri}\n` +
+            'Starting extraction...';
+
           progressBar.style.width = '0%';
 
           const zipPath = await this.getFullPath('archive.zip', Directory.Data);
