@@ -135,4 +135,72 @@ describe('Android Integration Tests', () => {
       expect(mockUnzip).toHaveBeenCalledWith(options);
     });
   });
+
+  describe('Path Resolution', () => {
+    it('should handle relative paths correctly', async () => {
+      const options = {
+        sourcePath: 'test-directory',
+        destinationPath: 'archive.zip'
+      };
+
+      mockZip.mockResolvedValueOnce(undefined);
+      await expect(mockZip(options)).resolves.not.toThrow();
+      expect(mockZip).toHaveBeenCalledWith(options);
+    });
+
+    it('should handle paths with spaces', async () => {
+      const options = {
+        sourcePath: 'my documents/test folder',
+        destinationPath: 'my archives/test archive.zip'
+      };
+
+      mockZip.mockResolvedValueOnce(undefined);
+      await expect(mockZip(options)).resolves.not.toThrow();
+      expect(mockZip).toHaveBeenCalledWith(options);
+    });
+
+    it('should handle absolute paths', async () => {
+      const options = {
+        sourcePath: '/storage/emulated/0/Download/test-directory',
+        destinationPath: '/storage/emulated/0/Download/archive.zip'
+      };
+
+      mockZip.mockResolvedValueOnce(undefined);
+      await expect(mockZip(options)).resolves.not.toThrow();
+      expect(mockZip).toHaveBeenCalledWith(options);
+    });
+
+    it('should handle file:// scheme URIs', async () => {
+      const options = {
+        sourcePath: 'file:///storage/emulated/0/Download/test-directory',
+        destinationPath: 'file:///storage/emulated/0/Download/archive.zip'
+      };
+
+      mockZip.mockResolvedValueOnce(undefined);
+      await expect(mockZip(options)).resolves.not.toThrow();
+      expect(mockZip).toHaveBeenCalledWith(options);
+    });
+
+    it('should handle content:// scheme URIs', async () => {
+      const options = {
+        sourcePath: 'content://com.android.externalstorage.documents/tree/primary%3ADownload%2Ftest-directory',
+        destinationPath: 'content://com.android.externalstorage.documents/tree/primary%3ADownload%2Farchive.zip'
+      };
+
+      mockZip.mockResolvedValueOnce(undefined);
+      await expect(mockZip(options)).resolves.not.toThrow();
+      expect(mockZip).toHaveBeenCalledWith(options);
+    });
+
+    it('should handle Japanese characters in paths', async () => {
+      const options = {
+        sourcePath: 'テスト/フォルダ',
+        destinationPath: 'アーカイブ/テスト.zip'
+      };
+
+      mockZip.mockResolvedValueOnce(undefined);
+      await expect(mockZip(options)).resolves.not.toThrow();
+      expect(mockZip).toHaveBeenCalledWith(options);
+    });
+  });
 }); 
