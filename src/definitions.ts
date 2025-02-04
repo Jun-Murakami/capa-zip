@@ -100,6 +100,26 @@ export interface ZipPlugin {
     destinationPath: string;
     files?: string[];
   }): Promise<void>;
+
+  /**
+   * Removes all registered event listeners.
+   * 
+   * @example
+   * ```typescript
+   * // Add progress listener
+   * const listener = await Zip.addListener('zipProgress', (progress) => {
+   *   const percentage = (progress.loaded / progress.total) * 100;
+   *   console.log(`Progress: ${percentage}%`);
+   * });
+   * 
+   * // Later, when you want to remove all listeners
+   * await Zip.removeAllListeners();
+   * ```
+   * 
+   * @returns A promise that resolves when all listeners have been removed
+   * @since 7.0.0
+   */
+  removeAllListeners(): Promise<void>;
 }
 
 /**
