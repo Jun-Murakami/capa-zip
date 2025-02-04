@@ -39,6 +39,11 @@ class MockEventPlugin extends WebPlugin implements ZipPlugin {
 
     return Promise.resolve();
   }
+
+  async removeAllListeners(): Promise<void> {
+    // WebPluginのremoveAllListenersを呼び出す
+    return super.removeAllListeners();
+  }
 }
 
 describe('Event Tests', () => {
@@ -82,6 +87,31 @@ describe('Event Tests', () => {
       expect(progressListener).toHaveBeenNthCalledWith(1, { loaded: 30, total: 100 });
       expect(progressListener).toHaveBeenNthCalledWith(2, { loaded: 60, total: 100 });
       expect(progressListener).toHaveBeenNthCalledWith(3, { loaded: 100, total: 100 });
+    });
+  });
+
+  describe('listener cleanup', () => {
+    it('should properly remove all listeners', async () => {
+      const progressListener = jest.fn();
+      plugin.addListener('zipProgress', progressListener);
+
+      // リスナーが登録されていることを確認
+      const options = {
+        sourcePath: 'test',
+        destinationPath: 'test.zip'
+      };
+      await plugin.zip(options);
+      expect(progressListener).toHaveBeenCalled();
+
+      // リスナーを解除
+      await plugin.removeAllListeners();
+
+      // 新しい操作を実行
+      progressListener.mockClear();
+      await plugin.zip(options);
+
+      // リスナーが呼ばれないことを確認
+      expect(progressListener).not.toHaveBeenCalled();
     });
   });
 }); 

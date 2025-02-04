@@ -100,6 +100,9 @@ export interface ZipPlugin {
     destinationPath: string;
     files?: string[];
   }): Promise<void>;
+
+  // リスナー解除メソッドを追加
+  removeAllListeners(): Promise<void>;
 }
 
 /**
