@@ -1,6 +1,6 @@
 # capa-zip
 
-A simple Zip/Unzip plugin for Capacitor v7, supporting iOS and Android platforms.
+A simple Zip/Unzip plugin for Capacitor, supporting iOS and Android platforms.
 
 ## Overview
 
